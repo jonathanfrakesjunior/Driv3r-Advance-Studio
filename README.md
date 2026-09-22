@@ -71,16 +71,6 @@ updates all pointers and expands the ROM to 16 MB if needed (the EEPROM save doe
 * Sound: "LS_Play (C) Logik State 2003", mixing rate 10512 Hz, songs "GBAMOD30" (RLE-coded channel columns).
 * Cutscenes: standard JPEG, only the SOS marker FFDA is stored as FF1A.
 
-## Mod: Vice City (mods/Driv3r - Vice City Mod.gba)
-
-Miami is completely replaced by a city based on the template `werkzeuge/vice_city_karte.png` (Nice stays original):
-two main islands with beach, parks, airport, bridges and small islands, 365 road sections with AI traffic
-(730 lanes), about 740 buildings along the roads (tall blocks on the white areas of the template), quay walls, water.
-The building density is chosen so that the game runs at 20 frames/s like the original.
-The player start and starting cars are in the downtown of the west island; all mission points were moved to the nearest
-new road (mission 1 entirely relative to the new start). The missions are therefore playable but no longer follow
-the original Miami geography – they can be adjusted further in the mission editor.
-The ROM can be opened in the Studio and edited further (building, faces, traffic).
 
 **Your own cities:** `werkzeuge/stadt_aus_bild.py <image.png> <output.gba> [units per pixel]` (Python with numpy,
 scipy, scikit-image, Pillow). Template colours: blue = water, black = road, yellow = beach, green = park,
