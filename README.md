@@ -32,6 +32,7 @@ updates all pointers and expands the ROM to 16 MB if needed (the EEPROM save doe
 | Sound & music | 10 songs (tracker GBAMOD30), 16 instruments, 38 effects | WAV, MIDI export/import, raw .gbamod |
 | Map editor | Miami & Nice as a textured top-down view from the 3D data, traffic lanes | **Build new buildings, roads with AI traffic, squares, water, ramps, bridges**; delete/move/retexture faces, clear/restore cells, descriptors |
 | Missions | 25 missions (Miami 1–12, Nice 13–25) with all steps, all 19 commands named | edit fields/hex, insert/delete/move steps, drag points on the map, JSON |
+| City from image | painted map sketch → completely new city (Miami or Nice slot) | PNG/JPG; preview, start point by click, density, textures; mission points are adjusted |
 | Complete package | everything out as a ZIP and back in | imported unchanged, the ROM stays byte-identical |
 
 ### Tips
@@ -57,6 +58,48 @@ updates all pointers and expands the ROM to 16 MB if needed (the EEPROM save doe
 * **In-game font:** under "HUD, font & skyline" → group "Font". Newly drawn characters (e.g. lower-case letters)
   are then allowed in the text editor.
 
+* **City from image – custom colours (since 1.2):** switch to *Custom colours* under "Colour mapping". The Studio extracts the
+  main colours of the image and suggests a mapping (road = the colour that forms lines; blended colours are ignored).
+  Each colour can be assigned to an area type, changed, removed or added from the image with the *eyedropper*.
+  The **colour tolerance** sets how far a pixel may deviate from a palette colour; pixels outside it (magenta in the preview)
+  take the area of their neighbours – ideal for JPEG artefacts. *Smoothing* removes noise inside areas without touching roads.
+  If an image does not match the standard colours, the Studio switches to custom colours automatically.
+
+* **3D view (map editor → 3D):** shows the real city geometry around the view point. Drag with the left mouse button = orbit,
+  right button (or Shift + drag) = pan, wheel = zoom, "View distance" sets how many cells are loaded.
+  In the 3D view everything is textured as long as the "Textures" box is ticked.
+  The editor works exactly as in the top-down view: a click selects a face or cell, building and placing ready-made buildings
+  work with a click, and selection and build previews are shown as outlines. Requires WebGL.
+* **Ready-made buildings (one click):** choose the *Ready-made building* mode, pick a shape (rectangle, L, U, T, cross, block with
+  courtyard, hexagon, octagon, round tower, tower on a podium, setback tower, twin towers), set width/depth/rotation/height and
+  click on the map - the building appears instantly with walls, roof, collision and occlusion. Multi-part shapes are made of
+  several convex bodies internally.
+
+* **Draw road (map editor → Draw road):** click control points, a smooth curve runs between them (rounded corners +
+  Catmull-Rom). Double-click, right-click or Enter builds it, Backspace undoes the last point.
+  It creates the carriageway, pavements on both sides (width 0 = off), traffic lanes in both directions (connected to nearby
+  lanes) and, on request, a collision surface for bridges/ramps. Start and end height give a slope.
+  Works in the top-down view and in 3D.
+
+* **Catalogue (map editor → Catalogue):** the Studio collects every building and 3D object that occurs in the loaded city
+  (Miami: 234 entries), shows them as thumbnails and places the chosen one with a single click - with its original
+  textures, collision and occlusion. Filters for towers, houses and small parts; rotation in 45° steps, size in per cent
+  and a height offset can be set.
+  The Studio additionally reads the buildings of the **unchanged original ROM**, so the original buildings stay available
+  even after "City from image" has replaced the city completely (filter "from the original ROM").
+* **Reference image (map, bottom right):** load your own image - city map, sketch, screenshot - and model on top of it.
+  It appears in the top-down view and flat in the 3D view, with adjustable opacity, units per pixel, rotation, centre and
+  height; optionally below the city. "Move image" sets the centre by clicking on the map. The image is only a template and
+  is never written into the ROM. In the "City from image" tab a button takes the loaded image over as the reference.
+
+* **Junctions:** the *Junction* mode places a complete junction (3 or 4 arms) with one click - carriageway, pavements and
+  full turning lanes; the arm ends are connected to nearby lanes. When a newly drawn road crosses existing lanes, those
+  lanes are now split at the nearest node and linked in both directions, so traffic turns there instead of doing a U-turn
+  at the end of the road. The cells' spawn-point entries are remapped to the new lane numbers automatically.
+* **3D controls:** the *Rotate/Pan* button decides what the left mouse button does; the right button always does the other
+  one. The *view distance* ranges from 3 k to 33 k world units (steps marked ⚠ cost noticeable performance depending on
+  your machine); the number of drawn triangles is shown in the toolbar.
+
 ## Technical notes (for the curious)
 
 * "VC" compression (VD-dev): header `VC`, u32 size, mode 0–9; bit stream with gamma codes (decoder in the game at 0x08254338).
@@ -71,8 +114,18 @@ updates all pointers and expands the ROM to 16 MB if needed (the EEPROM save doe
 * Sound: "LS_Play (C) Logik State 2003", mixing rate 10512 Hz, songs "GBAMOD30" (RLE-coded channel columns).
 * Cutscenes: standard JPEG, only the SOS marker FFDA is stored as FF1A.
 
+## Mod: Vice City (mods/Driv3r - Vice City Mod.gba)
 
-**Your own cities:** `werkzeuge/stadt_aus_bild.py <image.png> <output.gba> [units per pixel]` (Python with numpy,
+Miami is completely replaced by a city based on the template `werkzeuge/vice_city_karte.png` (Nice stays original):
+two main islands with beach, parks, airport, bridges and small islands, 365 road sections with AI traffic
+(730 lanes), about 740 buildings along the roads (tall blocks on the white areas of the template), quay walls, water.
+The building density is chosen so that the game runs at 20 frames/s like the original.
+The player start and starting cars are in the downtown of the west island; all mission points were moved to the nearest
+new road (mission 1 entirely relative to the new start). The missions are therefore playable but no longer follow
+the original Miami geography – they can be adjusted further in the mission editor.
+The ROM can be opened in the Studio and edited further (building, faces, traffic).
+
+**Your own cities:** directly in the Studio under **World → City from image** (no Python needed; an example template is included there). Alternatively still `werkzeuge/stadt_aus_bild.py <image.png> <output.gba> [units per pixel]` (Python with numpy,
 scipy, scikit-image, Pillow). Template colours: blue = water, black = road, yellow = beach, green = park,
 grey = buildable area, white = tall buildings. The original ROM is read from the Studio folder.
 
